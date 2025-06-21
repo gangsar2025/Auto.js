@@ -1,0 +1,62 @@
+"ui";
+
+ui.layout(
+    <vertical padding="16">
+        <text text="Auto Follow Threads" textSize="18sp" gravity="center"/>
+        <button id="start" text="START"/>
+        <button id="stop" text="STOP"/>
+        <text id="status" text="Status: Standby" textColor="#555555" gravity="center"/>
+    </vertical>
+);
+
+let stopFlag = false;
+
+// Fungsi utama auto-follow
+function autoFollowLoop() {
+    let followCount = 0;
+    ui.status.setText("Status: Running...");
+
+    while (!stopFlag) {
+        let followButtons = textMatches(/Follow/i).find();
+        if (followButtons.length > 0) {
+            for (let i = 0; i < followButtons.length && !stopFlag; i++) {
+                let btn = followButtons[i];
+                if (btn && btn.clickable()) {
+                    btn.click();
+                    followCount++;
+                    ui.status.setText("Status: Followed " + followCount + " akun");
+                    sleep(1000);
+                }
+            }
+        } else {
+            toast("Tidak ada tombol Follow ditemukan, geser layar...");
+        }
+
+        swipe(500, 1500, 500, 800, 1000); // Scroll
+        sleep(1500);
+    }
+
+    ui.status.setText("Status: Stopped");
+    toast("Bot berhenti.");
+}
+
+// Tombol START ditekan
+ui.start.click(() => {
+    if (!stopFlag) {
+        toast("Meluncurkan Threads...");
+        app.launchApp("Threads"); // Ganti jika nama aplikasi berbeda
+        stopFlag = false;
+
+        setTimeout(() => {
+            threads.start(function () {
+                autoFollowLoop();
+            });
+        }, 5000); // Waktu tunggu untuk buka aplikasi
+    }
+});
+
+// Tombol STOP ditekan
+ui.stop.click(() => {
+    stopFlag = true;
+    toast("Menghentikan...");
+});
